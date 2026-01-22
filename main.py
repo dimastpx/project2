@@ -6,6 +6,7 @@ print("Hello")
 DATA_EXAMPLE = {"operations": [{"money": 0,
                                 "date": "19.01.2026",
                                 "description": "Тестовая операция",
+                                "category": "Переводы",
                                 "type": "income"}],
                 "income_category": ["Зарплата", "Стипендия", "Переводы", "Деп"],
                 "expense_category": ["Еда", "Техника", "Продукты", "Деп"]}
@@ -106,7 +107,11 @@ class Main:
             income["category"] = self.data["income_category"][choice - 1]
 
             print("Дата (dd.mm.yyyy)")
-            date = datetime.strptime(input("Выедите дату строго формата дд.мм.гггг: "), "%d.%m.%Y")
+
+            date = input("Выедите дату строго формата дд.мм.гггг (оставьте пустым для сегодняшней): ")
+            if date == "":
+                date = datetime.today().strftime("%d.%m.%Y")
+            date = datetime.strptime(date, "%d.%m.%Y")
 
             if date_easter_check(date):
                 print(date_easter_check(date))
@@ -143,7 +148,11 @@ class Main:
             expense["category"] = self.data["expense_category"][choice - 1]
 
             print("Дата (dd.mm.yyyy)")
-            date = datetime.strptime(input("Выедите дату строго формата дд.мм.гггг: "), "%d.%m.%Y")
+
+            date = input("Выедите дату строго формата дд.мм.гггг (оставьте пустым для сегодняшней): ")
+            if date == "":
+                date = datetime.today().strftime("%d.%m.%Y")
+            date = datetime.strptime(date, "%d.%m.%Y")
 
             if date_easter_check(date):
                 print(date_easter_check(date))
@@ -170,10 +179,13 @@ class Main:
         print(f"Расходы: {expenses_count}")
         print(f"Итог: {income_count - expenses_count}")
 
-        ratio = (expenses_count / income_count) * 100
-        print(f"Процент доходов от расходов {ratio}%")
-        if ratio > 100:
-            print("Ваши расходы превышают доходы")
+        try:
+            ratio = (expenses_count / income_count) * 100
+            print(f"Процент доходов от расходов {ratio}%")
+            if ratio > 100:
+                print("Ваши расходы превышают доходы")
+        except ZeroDivisionError:
+            print("Доходы равны нулю, поэтому процент показать не получится")
 
     def add_category(self):
         print("="*50)
@@ -215,6 +227,8 @@ class Main:
                      reverse=True)
         for i in lst:
             print_op(i)
+
+        self.show_general()
 
         print("Выберите действия:")
         print("0 - Вернуться в меню")
@@ -296,7 +310,18 @@ class Main:
 
 
     def show_filter_date(self):
-        pass
+        print("="*50)
+        try:
+            date = input("Выедите дату строго формата дд.мм.гггг (оставьте пустым для сегодняшней): ")
+            if date == "":
+                date = datetime.today().strftime("%d.%m.%Y")
+            date = datetime.strftime(datetime.strptime(date, "%d.%m.%Y"), "%d.%m.%Y")
+
+            lst = (i for i in self.data["operations"] if i["date"] == date)
+            print_op_list(lst)
+
+        except ValueError:
+            print("Ошибка: неверный формат даты")
 
     def save(self):
         with open("save.json", "w") as f:
